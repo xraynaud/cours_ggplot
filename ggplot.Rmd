@@ -1,0 +1,476 @@
+---
+title: "Graphiques avec **ggplot2**"
+author: Xavier Raynaud <br/> xavier.raynaud@sorbonne-universite.fr
+output:
+  xaringan::moon_reader:
+    css: ["SU_xaringan.css"]
+    lib_dir: libs
+    nature: 
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+class: right, middle
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = T, fig.width=4, fig.height=4, cache = T)
+library(knitr)
+library(ggthemes)
+```
+
+# Présentation générale
+
+---
+class: left, top
+# Qu'est ce que **ggplot2**?
+
+ggplot2: *Grammar of Graphics* plots (2ème version)
+
+```{r library}
+library(ggplot2)
+```
+
+* appartient au `tidiverse` (developpé par H Wickham),
+* existe sur `R` depuis 10 ans,
+* développement dynamique, version 3.0 sortie le 4 Juillet 2018,
+* compatible avec les graphiques **grid**, incompatible avec les graphiques `base`,
+* *Extensible* (possiblilité d'étendre les capacités de visualisation),
+* *Themable* 
+
+L'idée principale est de séparer le fond (type de visualisation des variables à observer) de la forme (axes, couleurs...).
+
+---
+
+# Exemples
+
+```{r exemple2,out.width="250px", echo=F}
+include_graphics("images/exemple2.png")
+```
+<br/>
+
+<div style="text-align:right;">
+```{r exemple1, out.width="550px", echo=F}
+include_graphics("images/fig_exemple1.png")
+```
+</div>
+
+---
+
+# Ressources
+
+.left-column[
+```{r covers, out.width="110px", echo=F}
+include_graphics("images/dv-cover-pupress.jpg")
+include_graphics("images/ggplot.jpg")
+include_graphics("images/fundamentals.jpg")
+
+```
+]
+.right-column[
+- **Data Visualization: A practical introduction**, *K Healy*, Princeton Univ Press, http://socviz.co/
+
+- **ggplot2: Elegant Graphics for Data Analysis**, *H Wickham*, Springer, https://github.com/hadley/ggplot2-book
+
+- **Fundamentals of Data Visualization**, *C Wilke*, O'Reilly, https://serialmentor.com/dataviz/
+
+- **StackOverflow**, www.stackoverflow.com
+
+- **RStudio**, www.rstudio.com
+
+<div style="text-align: right;">
+```{r cheatsheet, out.width="350px", echo=F}
+include_graphics("images/data-visualization-cheatsheet-thumbs.png")
+```
+</div>
+]
+
+---
+
+# Principes
+
+On *additionne* des composants graphiques pour le fond (`ggplot()`, `geom_...()`) et la forme (`stats_...()`, `scale_...()`, `theme_...()`):
+
+> **ggplot**(data=*données*, aes(x=*variable_x*, y=*variable_y*)) +
+>  <br/>&nbsp;&nbsp;&nbsp;**geom_...**(aes(colour=...,shape=...)) +
+>  <br/>&nbsp;&nbsp;&nbsp;**stats\_...**() + 
+>  <br/>&nbsp;&nbsp;&nbsp;**scale\_...\_...**() + 
+>  <br/>&nbsp;&nbsp;&nbsp;**theme**()
+
+
+L'objet graphique est créé par la fonction `ggplot()` qui prend 2 arguments (facultatifs) `data=` et `aes=`.
+
+Les autres éléments ajoutent des visualisations (nuages de points, barres...) ou modifie l'allure graphique générale.
+
+---
+
+# Les geoms
+## Données
+
+```{r df}
+df = data.frame(V1 = runif(99), 
+                V2 = rnorm(99,mean=rep(5:7,each=33)), 
+                V3 = rep(LETTERS[1:3],each=33))
+```
+
+```{r dfshow, echo=F}
+kable(head(df), format = "html",align='c')
+```
+
+---
+
+# Geoms pour décrire une variable 
+## `geom_boxplot()`
+
+```{r boxplot, fig.show='hold'}
+ggplot(data=subset(df,V3=="A"),aes(y=V2)) + geom_boxplot()
+ggplot(data=df,aes(x=V3, y=V2)) + geom_boxplot()
+```
+
+---
+
+# Geoms pour décrire une variable 
+## `geom_histogram()`
+
+```{r histo, fig.show='hold',message=FALSE}
+ggplot(data=subset(df,V3=="A"),aes(x=V2)) + geom_histogram(bins=20)
+```
+
+---
+
+# Geoms pour décrire une variable 
+## `geom_density()`
+
+```{r density, fig.show='hold'}
+ggplot(data=subset(df,V3=="A"),aes(x=V2)) + geom_density(fill="gray50", colour="gray50")
+```
+
+---
+
+# Geoms pour décrire les liens entre variables 
+## `geom_point()`
+
+```{r points, fig.show='hold'}
+ggplot(data=df,aes(x = V1, y=V2)) + geom_point()
+ggplot(data=df,aes(x = V1, y=V2)) + geom_point(aes(colour = V3))
+```
+
+---
+
+# Geoms pour décrire les liens entre variables 
+## `geom_line()`, `geom_path()`
+
+.pull-left[
+```{r line,  fig.width=3.5, fig.height=3.5}
+ggplot(data=df,aes(x = V1, y=V2)) + 
+  geom_line(aes(colour = V3))
+```
+ 
+<div style="font-size: 10px;">
+Points reliés par ordre croissant de `x`
+</div>
+]
+
+.pull-right[
+```{r path,  fig.width=3.5, fig.height=3.5}
+ggplot(data=df,aes(x = V1, y=V2)) + 
+  geom_path(aes(colour = V3))
+```
+<div style="font-size: 10px;">
+Points reliés par ordre d'apparition dans le tableau de données
+</div>
+]
+
+---
+
+# Combiner les geoms
+```{r combine, fig.show='hold', fig.width=5}
+ggplot(data=df,aes(x = V1, y=V2)) +
+  geom_point(aes(shape= V3)) +
+  geom_line(aes(colour = V3))
+```
+
+---
+
+# Geoms pour décrire les liens entre variables 
+## `geom_bar()`
+
+```{r bar, fig.show='hold'}
+dfaggr = aggregate(df[,1:2], by=list(V3 = df$V3), mean)
+ggplot(data=dfaggr,aes(x = V3,y=V2)) + geom_col() # ou geom_bar(stat='identity')
+```
+
+---
+
+# Geoms pour décrire les liens entre variables 
+## `geom_linerange()`, `geom_errorbar()`
+```{r linerange, fig.show='hold'}
+dfaggr$sd = aggregate(df[,2], by=list(V3 = df$V3), sd)$x
+ggplot(data=dfaggr,aes(x = V3,y=V2)) + geom_col() +
+  geom_errorbar(aes(ymin=V2-sd/sqrt(33), ymax = V2+sd/sqrt(33),width=0.2))
+```
+---
+# Geoms pour représenter des surfaces
+## `geom_rect(), geom_tile()`
+```{r tile, fig.show='hold', fig.width=5}
+ggplot(data=data.frame(
+  expand.grid(x=1:dim(volcano)[1],y=1:dim(volcano)[2]),z=as.numeric(volcano)),
+  aes(x=x,y=y,fill=z)) + 
+  geom_tile()+coord_equal()
+```
+
+---
+# Pour annoter des graphiques
+## `geom_hline()`, `geom_vline()`, `geom_abline()`
+
+```{r hline, fig.show='hold'}
+ggplot(data=df,aes(x = V1, y=V2)) +
+  geom_line(aes(colour= V3)) +
+  geom_hline(data = aggregate(df$V2,by=list(V3=df$V3),mean),
+             aes(yintercept=x,colour=V3))
+```
+---
+# Pour annoter des graphiques
+## les fonctions `stat_...()`
+```{r stat, fig.show='hold'}
+ggplot(data=df,aes(x = V1, y=V2)) + 
+  geom_point() + 
+  stat_smooth(method="lm")
+```
+
+---
+# Pour annoter des graphiques
+## les fonctions `stat_...()`
+```{r stat2, fig.show='hold'}
+ggplot(data=df,aes(x = V1, y=V2, group=V3)) + 
+  geom_point() + 
+  stat_smooth()
+```
+---
+# facetting
+##`facet_grid()`, `facet_wrap()`
+
+```{r facet, fig.width=6}
+ggplot(df,aes(x = V1, y=V2)) + geom_point() +  facet_grid(cols=vars(V3)) 
+```
+
+---
+class: center, middle
+
+# Mise en forme
+
+---
+class: left, top
+# Graphique: 
+Dans la suite, on va travailler à partir du graph suivant: 
+```{r graph}
+g = ggplot(data=df,aes(x = V1, y=V2)) + geom_point(aes(colour = V3))
+```
+
+```{r echo=F}
+g
+```
+
+---
+# Les échelles 
+## Les axes: `scale_x,y_...()`
+
+.pull-left[
+```{r axes, fig.show='hold'}
+g + 
+  scale_x_continuous(limits = c(-5,5))
+```
+]
+.pull-right[
+
+```{r axelog}
+g + scale_x_log10()
+```
+]
+---
+
+# Les échelles 
+## couleurs : `scale_colour_...()`
+
+.pull-left[
+```{r default}
+g
+```
+]
+.pull-right[
+```{r scalecolour}
+g +  scale_colour_viridis_d()
+```
+]
+---
+
+# Les themes par defaut
+
+.pull-left3[
+```{r bw, fig.width=3, fig.height=2}
+g + theme_bw()
+```
+]
+.pull-left3[
+```{r classic, fig.width=3, fig.height=2}
+g + theme_classic()
+```
+]
+.pull-left3[
+```{r minimal, fig.width=3, fig.height=2}
+g + theme_minimal()
+```
+]
+Les thèmes `theme_...()` ne modifient que l'allure générale du graphique et ne modifient pas la couleur des points (définis via un `aes()`).
+Il faut également modifier l'échelle de couleurs avec  `scale_colour_discrete()` si l'on veut un graph en noir & blanc, par exemple.
+
+---
+class: center, middle
+
+# Pour aller plus loin
+
+---
+# Les themes `ggthemes`
+
+.pull-left3[
+```{r economist, fig.width=3, fig.height=2}
+g + theme_economist()
+```
+]
+.pull-left3[
+```{r excel, fig.width=3, fig.height=2}
+g + theme_excel_new()
+```
+]
+.pull-left3[
+```{r tufte, fig.width=3, fig.height=2}
+g + theme_tufte()
+```
+]
+
+---
+# Rendre ses graphs interactifs
+##`plot.ly`
+```{r plotly}
+library(plotly)
+ggplotly(g)
+```
+---
+# Animer des graphiques
+## `gganimate` 
+
+```{r gganimate1,message=FALSE, echo=F}
+theme_set(theme_gray())
+n=1000
+df = data.frame(
+  x=do.call("c",lapply(list(1,2,3), function(x) rnorm(n, sd=x))),
+  y = rep(1:3,each=n)
+  )
+```
+
+```{r gganimate2,message=FALSE, fig.height = 2.5}
+library(gganimate)
+animate(ggplot(df,aes(x=x)) +  geom_density(bw=1, fill="gray50", colour="gray50") + theme(legend.position = 'none') +
+  transition_states(y, transition_length = 3, state_length = 1, wrap=T) +
+  ease_aes('linear') + labs(title = "sigma = {closest_state}"),height=400)
+```
+
+---
+# Visualisations 3D 
+
+.pull-left[
+Supposons $$z = x^2 + 3\times y + \epsilon$$
+]
+
+.pull-right[
+```{r data3d,echo=F}
+x = runif(100,min=0,max=5)
+y = runif(100,min=0,max=10)
+z = x^2 + 3*y + runif(100)
+
+ggplot(data=data.frame(x=x,y=y,z=z),aes(x=x,y=z)) +  geom_point()
+ggplot(data=data.frame(x=x,y=y,z=z),aes(x=y,y=z)) +  geom_point()
+
+```
+]
+
+---
+# Visualisations 3D 
+## rgl
+```{r rgl}
+library(rgl)
+plot3d(x,y,z)
+rglwidget(width=400,height=400)
+```
+
+---
+# Visualisations 3D 
+## rgl
+
+```{r rgl2}
+plot3d(x,y,z,col=rep(1:4,each=25))
+rglwidget(width=400,height=400)
+```
+
+---
+# Visualisations 3D 
+## scatterplot3d
+```{r scat, fig.width=10, fig.height=6}
+library(scatterplot3d)
+scatterplot3d(x,y,z)
+```
+---
+# Visualisations 3D 
+## plot3d
+```{r plot3d, fig.width=10, fig.height=6}
+library(plot3D)
+scatter3D(x,y,z)
+```
+
+---
+# Visualisations 3D 
+## plot3d
+```{r plot3d2, fig.width=10, fig.height=6}
+xseq = 0:5
+yseq = 0:10
+surf=expand.grid(x=xseq,y=yseq)
+surfmat = matrix( surf$x^2 + 3*surf$y ,nrow=length(xseq))
+
+scatter3D(x,y,z,surf=list(x=xseq,y=yseq,z=surfmat,col=8,facets=NA),fill=F,pch=20)
+```
+---
+# Visualisations 3D 
+## `rayshader`
+```{r rayshader, fig.width=10, fig.height=6,message=FALSE}
+library(rayshader)
+plot_3d(sphere_shade(volcano,texture="desert",progbar=F),volcano,zscale=10)
+rglwidget()
+```
+---
+class: left, top
+# Pour faire des assemblages
+## `grid.arrange` du paquet `gridExtra` 
+
+```{r gridarrange,message=FALSE, fig.width=6}
+library(gridExtra)
+grid.arrange(ggplot(data=df,aes(x=x)) + geom_histogram(),g)
+```
+---
+class: left, top
+# Pour faire des assemblages
+## `cowplot` 
+
+```{r cowplot,message=FALSE, fig.width=6}
+library(cowplot)
+plot_grid(ggplot(data=df,aes(x=x)) + geom_histogram(), g,nrow = 2,labels=letters[1:2])
+```
+
+---
+class: left, top
+# Pour faire des assemblages
+## `patchwork` 
+
+```{r patchwork,message=FALSE, fig.width=6}
+library(patchwork)
+(ggplot(data=df,aes(x=x)) + geom_histogram()) / g 
+```
+
