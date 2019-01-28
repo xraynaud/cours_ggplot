@@ -1,0 +1,21 @@
+language: r
+sudo: false
+script: make bacon
+cache: packages
+r_packages:
+  - rmarkdown
+  - ggplot2
+  - knitr
+  - ggthemes
+  - plotly
+  - gganimate
+  - scatterplot3d
+  - plot3D
+  - rayshader
+  - rgl
+  - gridExtra
+  - cowplot
+  - patchork
+os:
+  - linux
+  - osx
