@@ -15,6 +15,7 @@ r_packages:
   - rgl
   - gridExtra
   - cowplot
+r_github_packages:
   - thomasp85/patchwork
 os:
   - linux
