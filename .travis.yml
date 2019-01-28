@@ -1,9 +1,9 @@
 language: r
 sudo: false
-script: make bacon
 cache: packages
 r_packages:
   - rmarkdown
+  - xaringan
   - ggplot2
   - knitr
   - ggthemes
@@ -15,7 +15,6 @@ r_packages:
   - rgl
   - gridExtra
   - cowplot
-  - patchork
+  - patchwork
 os:
   - linux
-  - osx
