@@ -18,4 +18,13 @@ r_packages:
 r_github_packages:
   - thomasp85/patchwork
 os:
-  - linux
+  - osx
+script:
+  - R -e "rmarkdown::render('ggplot.Rmd')"
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: master
+  local_dir: public
