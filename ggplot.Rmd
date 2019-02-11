@@ -13,7 +13,7 @@ output:
 class: right, middle
 
 ```{r setup, include=FALSE} 
-knitr::opts_chunk$set(echo = T, fig.width=4, fig.height=4, cache = T)
+knitr::opts_chunk$set(echo = T, fig.width=4, fig.height=4, cache = F)
 library(knitr)
 library(ggthemes)
 ```
@@ -55,7 +55,13 @@ include_graphics("images/fig_exemple1.png")
 </div>
 
 ---
-
+# A la pointe du progrès
+```{r bbc, out.width="500px", echo=F}
+include_graphics("images/BBC_medium.png")
+```
+https://medium.com/bbc-visual-and-data-journalism/how-the-bbc-visual-and-data-journalism-team-works-with-graphics-in-r-ed0b35693535
+https://github.com/bbc/bbplot
+---
 # Ressources
 
 .left-column[
@@ -87,6 +93,12 @@ include_graphics("images/data-visualization-cheatsheet-thumbs.png")
 ---
 
 # Principes
+.left-column[
+```{r grammar, out.width="500px", echo=F}
+include_graphics("images/ggplot-3.png")
+```
+]
+.right-column[
 
 On *additionne* des composants graphiques pour le fond (`ggplot()`, `geom_...()`) et la forme (`stats_...()`, `scale_...()`, `theme_...()`):
 
@@ -100,7 +112,7 @@ On *additionne* des composants graphiques pour le fond (`ggplot()`, `geom_...()`
 L'objet graphique est créé par la fonction `ggplot()` qui prend 2 arguments (facultatifs) `data=` et `aes=`.
 
 Les autres éléments ajoutent des visualisations (nuages de points, barres...) ou modifie l'allure graphique générale.
-
+]
 ---
 
 # Les geoms
@@ -123,7 +135,16 @@ kable(head(df), format = "html",align='c')
 
 ```{r boxplot, fig.show='hold'}
 ggplot(data=subset(df,V3=="A"),aes(y=V2)) + geom_boxplot()
+
 ggplot(data=df,aes(x=V3, y=V2)) + geom_boxplot()
+```
+---
+
+# Geoms pour décrire une variable 
+## `geom_jitter()`
+
+```{r jitterplot, fig.show='hold'}
+ggplot(data=df,aes(x=V3, y=V2)) + geom_jitter(width=0.30)
 ```
 
 ---
@@ -141,7 +162,8 @@ ggplot(data=subset(df,V3=="A"),aes(x=V2)) + geom_histogram(bins=20)
 ## `geom_density()`
 
 ```{r density, fig.show='hold'}
-ggplot(data=subset(df,V3=="A"),aes(x=V2)) + geom_density(fill="gray50", colour="gray50")
+ggplot(data=subset(df,V3=="A"),aes(x=V2)) +
+  geom_density(fill="gray50", colour="gray50")
 ```
 
 ---
@@ -179,6 +201,7 @@ ggplot(data=df,aes(x = V1, y=V2)) +
 Points reliés par ordre d'apparition dans le tableau de données
 </div>
 ]
+
 
 ---
 
@@ -219,6 +242,25 @@ ggplot(data=data.frame(
 ```
 
 ---
+# Geoms pour représenter des surfaces
+## `geom_ribbon()`
+```{r ribbon,  fig.width=3.5, fig.height=3.5}
+ggplot(data=df,aes(x = V1, ymin=V2/2, ymax=2*V2)) + 
+  geom_ribbon()
+```
+
+---
+# Geoms pour les cartes
+## `geom_sf()`
+
+```{r carte,fig.width=12}
+library(rnaturalearth)
+wrld = ne_countries(returnclass="sf")
+ggplot(wrld) + geom_sf(aes(fill=subregion))
+
+```
+
+---
 # Pour annoter des graphiques
 ## `geom_hline()`, `geom_vline()`, `geom_abline()`
 
@@ -231,19 +273,43 @@ ggplot(data=df,aes(x = V1, y=V2)) +
 ---
 # Pour annoter des graphiques
 ## les fonctions `stat_...()`
-```{r stat, fig.show='hold'}
+
+.pull-left[
+```{r stat, fig.show='hold',message=FALSE}
+ggplot(data=df,aes(x = V1, y=V2)) + 
+  geom_point() + 
+  stat_smooth()
+```
+]
+.pull-right[
+```{r statlm, fig.show='hold',message=FALSE}
 ggplot(data=df,aes(x = V1, y=V2)) + 
   geom_point() + 
   stat_smooth(method="lm")
+```
+]
+---
+# Pour annoter des graphiques
+## les fonctions `stat_...()`
+```{r stat2, fig.show='hold',message=FALSE}
+ggplot(data=df,aes(x = V1, y=V2, group=V3)) + 
+  geom_point(aes(colour=V3)) + 
+  stat_smooth()
 ```
 
 ---
 # Pour annoter des graphiques
 ## les fonctions `stat_...()`
-```{r stat2, fig.show='hold'}
-ggplot(data=df,aes(x = V1, y=V2, group=V3)) + 
-  geom_point() + 
-  stat_smooth()
+```{r stat3, fig.show='hold',message=FALSE}
+ggplot(data.frame(x=c(0,2*pi)),aes(x)) + 
+  stat_function(fun=sin)
+```
+
+---
+# Pour annoter des graphiques
+## les fonctions `annotate`
+```{r annotatetext}
+ggplot(data=df,aes(x = V1, y=V2)) + geom_point(aes(colour = V3))+annotate("text",x=0.5,y=6,label="Secret",size=20,col="red",angle=30)
 ```
 ---
 # facetting
@@ -275,17 +341,19 @@ g
 ## Les axes: `scale_x,y_...()`
 
 .pull-left[
-```{r axes, fig.show='hold'}
+```{r axelog}
 g + 
-  scale_x_continuous(limits = c(-5,5))
+  scale_x_log10()
 ```
 ]
 .pull-right[
-
-```{r axelog}
-g + scale_x_log10()
+```{r axes, fig.show='hold'}
+g + scale_x_continuous(
+  limits = c(-5,5))
 ```
 ]
+Attention: Cette manière de redéfinir les limites des axes *supprime* les données situées hors de cette gamme ! Il faut utiliser les arguments `xlim`et `ylim` de `coord_cartesian()` pour redéfinir les axes sans perdre de données. 
+
 ---
 
 # Les échelles 
@@ -302,7 +370,39 @@ g +  scale_colour_viridis_d()
 ```
 ]
 ---
+# Les axes
 
+.pull-left[
+```{r}
+ggplot(df,aes(x=V1,y=V2)) + 
+  geom_line() 
+```
+]
+.pull-right[
+```{r coord}
+ggplot(df,aes(x=V1,y=V2)) + 
+  geom_line() + coord_polar()
+```
+]
+
+---
+# Les axes
+
+.pull-left[
+```{r}
+ggplot(df,aes(x="")) + 
+  geom_bar(aes(fill=V3)) 
+```
+]
+.pull-right[
+```{r pie}
+ggplot(df,aes(x="")) + 
+  geom_bar(aes(fill=V3)) +
+  coord_polar("y",clip = "off",start=0)
+```
+]
+
+---
 # Les themes par defaut
 
 .pull-left3[
@@ -348,9 +448,41 @@ g + theme_tufte()
 ]
 
 ---
+# Les extensions
+## Joy plots avec `ggridges`: 
+
+```{r ggridges, message=FALSE, fig.width=6,fig.height=4}
+library(ggridges)
+norm_data <- data.frame(var = rep(1:5, each = 30))
+norm_data$group <- factor(norm_data$var, levels=5:1)
+norm_data$value <- rnorm(nrow(norm_data), norm_data$var,1)
+
+ggplot(norm_data,aes(x=value,y=group,group=group,fill=group)) +
+  geom_density_ridges(bandwidth=1)
+```
+
+---
+# Les extensions
+## Les plots classiques avec `GGally`
+
+```{r GGally,fig.width=8,fig.height=5}
+library(GGally)
+ggpairs(df)
+```
+
+---
+# Les extensions
+## Les plots classiques avec `ggfortify`
+
+```{r ggfortify,fig.width=8,fig.height=6}
+library(ggfortify)
+autoplot(lm(mpg~wt,data=mtcars))
+```
+
+---
 # Rendre ses graphs interactifs
 ##`plot.ly`
-```{r plotly}
+```{r plotly,message=F}
 library(plotly)
 ggplotly(g)
 ```
@@ -361,7 +493,7 @@ ggplotly(g)
 ```{r gganimate1,message=FALSE, echo=F}
 theme_set(theme_gray())
 n=1000
-df = data.frame(
+df2 = data.frame(
   x=do.call("c",lapply(list(1,2,3), function(x) rnorm(n, sd=x))),
   y = rep(1:3,each=n)
   )
@@ -369,11 +501,42 @@ df = data.frame(
 
 ```{r gganimate2,message=FALSE, fig.height = 2.5}
 library(gganimate)
-animate(ggplot(df,aes(x=x)) +  geom_density(bw=1, fill="gray50", colour="gray50") + theme(legend.position = 'none') +
-  transition_states(y, transition_length = 3, state_length = 1, wrap=T) +
-  ease_aes('linear') + labs(title = "sigma = {closest_state}"),height=400)
-```
+animate(ggplot(df2,aes(x=x)) +  geom_density(bw=1, fill="gray50", colour="gray50") + theme(legend.position = 'none') +
+  transition_manual(y)+
+      ease_aes('linear') + labs(title = "sigma = {frame}"),height=400)
 
+#  transition_states(y, transition_length = 3, state_length = 1, wrap=T) +
+```
+---
+# Animer des graphiques
+## `gganimate` 
+.pull-left[
+![](cartograms.gif)
+]
+.pull-right[
+```{r eval=F}
+library(rnaturalearth)
+library(cartogram)
+library(sf)
+
+read.csv("annual-co-emissions-per-country.csv", stringsAsFactors =F) -> co2
+
+### Gros bout de code compliqué qui permet de générer une table sf 
+###où chaque ligne correspond à un cartogramme, c'est à dire une carte
+###où les surfaces des pays sont pondérées par leurs émissions
+
+g = ggplot(wrldCo2[wrldCo2$year>0,]) + 
+  geom_sf(aes(fill=subregion)) + coord_sf(datum = NA) +
+  theme(text=element_text(size=14,  family="sans"),
+        panel.grid = element_blank(),panel.grid.major = element_blank(),panel.grid.minor = element_blank(), panel.background = element_rect("lightblue"),axis.line=element_blank(),
+        axis.text.x=element_blank(),axis.text.y=element_blank(),
+        axis.ticks=element_blank(),axis.title.x=element_blank(),
+        axis.title.y=element_blank(),legend.position="none") + 
+  labs(title="Country relative contributions to CO\u2082 emissions,  {current_frame}") +
+  annotate("text",x=14000000,y=-7000000,label="source: https://ourworldindata.org/") +
+  transition_manual(year)
+```
+]
 ---
 # Visualisations 3D 
 
@@ -385,7 +548,7 @@ Supposons $$z = x^2 + 3\times y + \epsilon$$
 ```{r data3d,echo=F}
 x = runif(100,min=0,max=5)
 y = runif(100,min=0,max=10)
-z = x^2 + 3*y + runif(100)
+z = x^2 + 3*y + runif(100, min = -5, max=5)
 
 ggplot(data=data.frame(x=x,y=y,z=z),aes(x=x,y=z)) +  geom_point()
 ggplot(data=data.frame(x=x,y=y,z=z),aes(x=y,y=z)) +  geom_point()
@@ -395,47 +558,75 @@ ggplot(data=data.frame(x=x,y=y,z=z),aes(x=y,y=z)) +  geom_point()
 
 ---
 # Visualisations 3D 
-## rgl
+## `rgl`
 ```{r rgl}
 library(rgl)
 plot3d(x,y,z)
 rglwidget(width=400,height=400)
 ```
-
+```{r echo=F}
+rgl.close()
+```
 ---
 # Visualisations 3D 
-## rgl
+## `rgl`
 
 ```{r rgl2}
 plot3d(x,y,z,col=rep(1:4,each=25))
 rglwidget(width=400,height=400)
 ```
+```{r echo=F}
+rgl.close()
+```
+---
+# Visualisations 3D 
+## `rgl`
+
+```{r rgl3}
+xseq = 0:5;yseq = 0:10
+surf=expand.grid(x=xseq,y=yseq)
+surfmat = matrix( surf$x^2 + 3*surf$y ,nrow=length(xseq))
+plot3d(x,y,z,col=rep(1:4,each=25))
+persp3d(xseq,yseq,surfmat,col="gray",add=T)
+rglwidget(width=400,height=400)
+```
+
+```{r echo=F}
+rgl.close()
+```
 
 ---
 # Visualisations 3D 
-## scatterplot3d
+## `scatterplot3d`
 ```{r scat, fig.width=10, fig.height=6}
 library(scatterplot3d)
 scatterplot3d(x,y,z)
 ```
 ---
 # Visualisations 3D 
-## plot3d
+## `plot3D`
 ```{r plot3d, fig.width=10, fig.height=6}
 library(plot3D)
-scatter3D(x,y,z)
+
+scatter3D(x,y,z,pch=20,phi=10,theta=30)
 ```
 
 ---
 # Visualisations 3D 
-## plot3d
+## `plot3D`
 ```{r plot3d2, fig.width=10, fig.height=6}
-xseq = 0:5
-yseq = 0:10
-surf=expand.grid(x=xseq,y=yseq)
-surfmat = matrix( surf$x^2 + 3*surf$y ,nrow=length(xseq))
+scatter3D(x,y,z,pch=20,phi=10,theta=30,
+          
+          surf=list(x=xseq,y=yseq,z=surfmat,col=8,facets=NA,fill=F))
+```
 
-scatter3D(x,y,z,surf=list(x=xseq,y=yseq,z=surfmat,col=8,facets=NA),fill=F,pch=20)
+---
+# Visualisations 3D 
+## `plot3D`
+```{r plot3d3, fig.width=10, fig.height=6}
+model = lm(z~I(x^2)+y)
+surfmat2 = matrix(coef(model)[1] + coef(model)[2]*surf$x^2 + coef(model)[3]*surf$y ,nrow=length(xseq))
+scatter3D(x,y,z,surf=list(x=xseq,y=yseq,z=surfmat2,col=8,facets=NA,fit = predict(model)),fill=F,pch=20,phi=10,theta=30)
 ```
 ---
 # Visualisations 3D 
@@ -445,6 +636,22 @@ library(rayshader)
 plot_3d(sphere_shade(volcano,texture="desert",progbar=F),volcano,zscale=10)
 rglwidget()
 ```
+```{r echo=F}
+rgl.close()
+```
+---
+# Représenter des résaux
+## le paquet `igraph`
+
+```{reseau, fig.width=6}
+library(igraph)
+m <- as.data.frame(matrix(rbinom(100,1,.4),10,10))
+names(m) = LETTERS[1:10]
+row.names(m) = letters[1:10]
+reseau = graph_from_incidence_matrix(m)
+plot(reseau,layout = layout.bipartite)
+```
+
 ---
 class: left, top
 # Pour faire des assemblages
@@ -452,16 +659,35 @@ class: left, top
 
 ```{r gridarrange,message=FALSE, fig.width=6}
 library(gridExtra)
-grid.arrange(ggplot(data=df,aes(x=x)) + geom_histogram(),g)
+grid.arrange(ggplot(data=df,aes(x=V1)) + geom_histogram(),g)
 ```
 ---
+class: left, top
+# Pour faire des assemblages
+## `grid.arrange` du paquet `gridExtra` 
+
+```{r gridarrange2,message=FALSE, fig.width=8}
+grid.arrange(
+  ggplot(data=df,aes(x=V1)) + geom_histogram(),
+  ggplot(data=df,aes(x=V2)) + geom_histogram(),
+  g,
+  nrow=2,layout_matrix=rbind(c(1,3),c(2,3)))
+```
+---
+
 class: left, top
 # Pour faire des assemblages
 ## `cowplot` 
 
 ```{r cowplot,message=FALSE, fig.width=6}
 library(cowplot)
-plot_grid(ggplot(data=df,aes(x=x)) + geom_histogram(), g,nrow = 2,labels=letters[1:2])
+plot_grid(
+  ggplot(data=df,aes(x=V1)) + 
+  geom_histogram(), g,nrow = 2,labels=letters[1:2])
+```
+
+```{r, echo=F}
+theme_set(theme_gray())
 ```
 
 ---
@@ -471,6 +697,21 @@ class: left, top
 
 ```{r patchwork,message=FALSE, fig.width=6}
 library(patchwork)
-(ggplot(data=df,aes(x=x)) + geom_histogram()) / g 
+(ggplot(data=df,aes(x=V1)) + geom_histogram()) / g 
 ```
 
+---
+class: left, top
+# Pour faire des assemblages
+## `patchwork` 
+
+```{r patchwork2,message=FALSE, fig.width=8}
+library(patchwork)
+((ggplot(data=df,aes(x=V1)) + geom_histogram()) / (ggplot(data=df,aes(x=V2)) + geom_histogram())) | ( g )
+```
+---
+class: center, middle
+
+# Exercices
+
+---

@@ -1,0 +1,195 @@
+---
+title: "Exercices"
+author: Xavier Raynaud <br/> xavier.raynaud@sorbonne-universite.fr
+output:
+  xaringan::moon_reader:
+    css: ["SU_xaringan.css"]
+    lib_dir: libs
+    nature: 
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+---
+
+```{r setup, include=FALSE} 
+knitr::opts_chunk$set(echo = T, fig.width=4, fig.height=4, cache = F)
+library(knitr)
+library(ggthemes)
+library(ggplot2)
+library(cowplot)
+library(gridExtra)
+library(GGally)
+library(plotly)
+library(ggfortify)
+```
+class: left, top
+**Les camemberts: une bonne idée ? **
+
+```{r camemberts, echo=F, fig.width=12}
+plot_grid(
+  ggplot(data.frame(x=letters[1:3],y=rep(100/3,3)),aes(x="",y=y)) + geom_bar(aes(fill=x),stat="identity")+coord_polar("y")+scale_fill_discrete(guide=F),
+  ggplot(data.frame(x=letters[1:3],y=c(30,34,36)),aes(x="",y=y)) + geom_bar(aes(fill=x),stat="identity")+coord_polar("y")+scale_fill_discrete(guide=F),
+  ggplot(data.frame(x=letters[1:3],y=c(36,34,30)),aes(x="",y=y)) + geom_bar(aes(fill=x),stat="identity")+coord_polar("y")+scale_fill_discrete(guide=F),
+  ggplot(data.frame(x=letters[1:3],y=rep(10/3,3)),aes(x=x,y=y)) + geom_bar(aes(fill=x),stat="identity")+scale_fill_discrete(guide=F),
+  ggplot(data.frame(x=letters[1:3],y=c(30,34,36)),aes(x=x,y=y)) + geom_bar(aes(fill=x),stat="identity")+scale_fill_discrete(guide=F),
+  ggplot(data.frame(x=letters[1:3],y=c(36,34,30)),aes(x=x,y=y)) + geom_bar(aes(fill=x),stat="identity")+scale_fill_discrete(guide=F),nrow = 2)
+```
+
+
+---
+**Chercher des outliers**
+
+```{r sparrows, fig.width=12,fig.height=7,message=F,warning=F}
+read.table("data/SparrowsElphick.txt",h=T)-> sparrows
+sparrows = sparrows[sparrows$SpeciesCode==1 & sparrows$Sex!=0,]
+sparrows = subset(sparrows,select = -c(SpeciesCode))
+sparrows$Sex=as.factor(sparrows$Sex)
+ggpairs(sparrows) # pas très informatif mais quelques points semblent sortir du lot...
+```
+---
+**Chercher des outliers**
+
+```{r longsparrows, fig.width=12,fig.height=7}
+library(tidyr) # On va transformer le tableau (wide) en tableau long
+sparrows$order=1:dim(sparrows)[1]
+longsparrows = gather(sparrows,"variable","value",
+                      wingcrd,culmen, flatwing,head,nalospi, tarsus,wt)
+ggplot(longsparrows,aes(x=value,y=order)) + 
+  geom_point() + facet_wrap(~variable, scales = "free")
+```
+
+---
+**Chercher des outliers**
+
+```{r longsparrows2, fig.width=12,fig.height=7}
+# On peut identifier les points problématiques avec plotly
+ggplotly(
+  ggplot(longsparrows,aes(x=value,y=order)) + 
+  geom_point() + facet_wrap(~variable, scales = "free"),
+  width=750,height=400
+)
+```
+---
+**Visualiser la distribution de variables**
+
+```{r histograms1,message=F}
+ggplot(sparrows,aes(x=culmen)) + geom_histogram()
+```
+---
+**Visualiser la distribution *conditionelle* de variables**
+```{r histograms2,message=F,fig.width=8}
+ggplot(sparrows,aes(x=culmen)) + geom_histogram() +facet_grid(Sex~1)
+```
+
+---
+**Visualiser l'hétéroscedasticité**
+```{r boxplots}
+ggplot(sparrows,aes(x=Sex,y=culmen)) + geom_boxplot() 
+```
+---
+**Visualiser l'hétéroscedasticité**
+```{r boxplots2,fig.width=8}
+ggplot(sparrows,aes(x=Sex,y=culmen)) + geom_boxplot()  + facet_grid(~Month)
+```
+
+
+---
+**A partir du jeu de données `mtcars` visualiser s'il y a une relation entre la masse des voitures (`wt`), leur consommation (`mpg`) et leur cylindrée (`cyl`).**
+
+---
+**A partir du jeu de données `mtcars` visualiser s'il y a une relation entre la masse des voitures (`wt`), leur consommation (`mpg`) et leur cylindrée (`cyl`).**
+
+```{r}
+ggplot(mtcars,aes(x=wt,y=mpg)) + geom_point(aes(colour=as.factor(cyl)))
+```
+
+---
+**A partir du jeu de données `mtcars` visualiser s'il y a une relation entre la masse des voitures (`wt`), leur consommation (`mpg`) et leur cylindrée (`cyl`).**
+
+```{r}
+ggplot(mtcars,aes(x=wt,y=mpg)) + geom_point(aes(colour=as.factor(cyl)))
+```
+
+---
+**Ajouter une droite de regression (modèle linéaire) sur ce graphique.**
+---
+**Ajouter une droite de regression (modèle linéaire) sur ce graphique.**
+
+Deux options:
+
+1. Faire la regression à la main et récupérer les valeurs des coefficients
+```{r}
+  coef(lm(mpg~wt,data=mtcars))
+  ggplot(mtcars,aes(x=wt,y=mpg)) +  geom_point(aes(colour=as.factor(cyl))) + 
+    geom_abline(intercept=37.285,slope=-5.344)
+```
+---
+**Ajouter une droite de regression (modèle linéaire) sur ce graphique.**
+
+Deux options:
+
+2. Utiliser `geom_smooth`
+```{r}
+  ggplot(mtcars,aes(x=wt,y=mpg)) +  geom_point(aes(colour=as.factor(cyl))) +
+    geom_smooth(method="lm")
+```
+
+---
+**Ajouter une droite de regression (modèle linéaire) sur ce graphique.**
+
+Les deux régressions sont identiques
+```{r,fig.show='hold'}
+ggplot(mtcars,aes(x=wt,y=mpg)) +  geom_point(aes(colour=as.factor(cyl))) + 
+  scale_x_continuous(limits = c(0,6))+  scale_y_continuous(limits=c(0,35)) + 
+  geom_abline(intercept=37.285,slope=-5.344)
+
+ggplot(mtcars,aes(x=wt,y=mpg)) +  geom_point(aes(colour=as.factor(cyl))) +
+  scale_x_continuous(limits = c(0,6))+  scale_y_continuous(limits=c(0,35)) + 
+  geom_smooth(method="lm")
+
+```
+
+---
+**Evaluer la qualité de la regression.**
+
+---
+**Evaluer la qualité de la regression.**
+```{r, fig.width=12,fig.height=7}
+autoplot(lm(mpg~wt,data=mtcars))
+```
+
+---
+**Appliquer une transformation pour faire la regression**
+
+
+---
+**Appliquer une transformation pour faire la regression**
+```{r}
+  model = lm(mpg~log(wt),data=mtcars)
+  newx = seq(min(mtcars$wt),max(mtcars$wt),length.out=100)
+  newdata = as.data.frame(cbind(newx=newx,  predict(model,newdata=data.frame(wt=newx),interval="confidence")))
+  
+ ggplot(newdata,aes(x=newx)) + 
+   geom_ribbon(aes(ymin=lwr,ymax=upr),fill=8)+
+   geom_line( aes(y=fit)) + 
+   geom_point(data=mtcars,aes(x=wt,y=mpg))
+```
+
+---
+**Peut-on représenter les données, la régression et les graphs diagnostiques dans un même montage ?**
+
+---
+**Peut-on représenter les données, la régression et les graphs diagnostiques dans un même montage ?**
+
+```{r, fig.width=12,fig.height=7}
+grid.arrange(
+  grobs=
+    c(list(ggplot(data=mtcars,aes(x=wt,y=mpg)) + geom_point() + geom_smooth(method="lm")),
+          autoplot(lm(mpg~wt,data=mtcars))@plots),
+  nrow=2,layout_matrix=rbind(c(1,2,3),c(1,4,5))
+  )
+```
+
+
+--- 
+**représenter les prédits vs observé**
