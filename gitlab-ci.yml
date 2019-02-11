@@ -1,0 +1,14 @@
+image: rocker/verse
+
+pages:
+  stage: deploy
+  script:
+  - R -e 'install.packages(c("rmarkdown","xaringan","ggplot2","knitr","ggthemes","plotly","gganimate","scatterplot3d","plot3D","rayshader","rgl","gridExtra","cowplot"))'
+  - R -e 'devtools::install_github("grimbough/msmbstyle")'
+  - Rscript -e "knitr::render_html('index.Rmd', 'all', output_dir = 'public')"
+  - cp public/ggplot.html public/index.html
+  artifacts:
+    paths:
+    - public
+  only:
+  - master

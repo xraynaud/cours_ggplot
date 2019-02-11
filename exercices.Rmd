@@ -164,6 +164,7 @@ autoplot(lm(mpg~wt,data=mtcars))
 
 ---
 **Appliquer une transformation pour faire la regression**
+
 ```{r}
   model = lm(mpg~log(wt),data=mtcars)
   newx = seq(min(mtcars$wt),max(mtcars$wt),length.out=100)
@@ -174,6 +175,27 @@ autoplot(lm(mpg~wt,data=mtcars))
    geom_line( aes(y=fit)) + 
    geom_point(data=mtcars,aes(x=wt,y=mpg))
 ```
+
+
+---
+**Représenter les prédits vs observé**
+
+```{r predvsobs}
+ggplot(data.frame(x=mtcars$mpg,y=predict(model)),aes(x=x,y=y)) +
+  geom_point() + 
+  geom_abline(intercept=0,slope = 1)
+```
+
+
+---
+**Représenter les prédits vs observé**
+
+```{r predvsobs2}
+ggplot(data.frame(x=mtcars$mpg,y=predict(model)),aes(x=x,y=y)) +
+  geom_point() + geom_abline(intercept=0,slope = 1)+
+  geom_text(label=row.names(mtcars),nudge_x = 0.5,hjust="left")
+```
+
 
 ---
 **Peut-on représenter les données, la régression et les graphs diagnostiques dans un même montage ?**
@@ -191,5 +213,4 @@ grid.arrange(
 ```
 
 
---- 
-**représenter les prédits vs observé**
+

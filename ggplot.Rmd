@@ -249,6 +249,16 @@ ggplot(data=df,aes(x = V1, ymin=V2/2, ymax=2*V2)) +
   geom_ribbon()
 ```
 
+
+---
+# Geoms pour écrire du texte
+## `geom_text()`
+```{r text,  fig.width=3.5, fig.height=3.5}
+ggplot(data=df,aes(x = V1, y=V2)) + 
+  geom_text(aes(label=V3,colour=V3))
+```
+
+
 ---
 # Geoms pour les cartes
 ## `geom_sf()`
@@ -304,6 +314,7 @@ ggplot(data=df,aes(x = V1, y=V2, group=V3)) +
 ggplot(data.frame(x=c(0,2*pi)),aes(x)) + 
   stat_function(fun=sin)
 ```
+
 
 ---
 # Pour annoter des graphiques

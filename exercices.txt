@@ -1,0 +1,27 @@
+A partir du fichier SparrowsElphick.txt, pour l'espèce 1
+
+1- chercher les outliers (2 possibilités)
+
+2- Visualiser la distribution de la variable culmen
+
+3- Visualiser la distribution conditionelle de culmen par rapport au sexe
+
+4 - Visualiser l'hétéroscedasticité de cette variable par rapport au sexe
+
+5 - Visualiser l'hétéroscedasticité de cette variable par rapport au sexe et au mois d'observation
+
+
+
+A partir du fichier mtcars (dans R)
+
+1- Visualiser la relation entre la masse des voitures (`wt`), leur consommation (`mpg`) et leur cylindrée (`cyl`)
+
+2- Ajouter une droite de regression (modèle linéaire) sur ce graphique
+
+3- Evaluer graphiquement la qualité de la regression
+
+4- Refaire la regression avec une transformation
+
+5- Visualiser les données, la regression et son intervalle de confiance
+
+6- Représenter les prédits vs les observé
